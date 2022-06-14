@@ -1,16 +1,17 @@
-kaboom()
+kaboom();
 
+// sprite loading
 loadSprite("pirates", "/sprites/pirates.png", {
 	sliceX: 8,
 	sliceY: 8,
-})
-loadSprite("pirates-bg", "/sprites/pirates-bg.png")
+});
+loadSprite("pirates-bg", "/sprites/pirates-bg.png");
 
 layers([
     "bg",
     "game",
     "ui",
-], "game")
+], "game");
 
 scene("main", (level_index) => {
 
@@ -18,9 +19,9 @@ scene("main", (level_index) => {
 		sprite("pirates-bg", { 
 			tiled: true, width: width(), height: height() }),
 		layer("bg"),
-	])
+	]);
 
-	const SPEED = 320
+	const SPEED = 320;
 
 	// character dialog data
 	const characters = {
@@ -32,7 +33,7 @@ scene("main", (level_index) => {
 			sprite: "pirates",
 			msg: "get out!",
 		},
-	}
+	};
 
 	// level layouts
 	const levels = [
@@ -56,7 +57,7 @@ scene("main", (level_index) => {
 			"        ",
 			"        ",
 		],
-	]
+	];
 
 	addLevel(levels[level_index], {
 		width: 32,
@@ -71,10 +72,10 @@ scene("main", (level_index) => {
 		any(ch) {
 			let frame;
 			if (ch >= 'a' && ch <= 'z') {
-				frame = ch.charCodeAt(0) - 'a'.charCodeAt(0)
+				frame = ch.charCodeAt(0) - 'a'.charCodeAt(0);
 			}
 			else if (ch >= 'A' && ch <= 'Z') {
-				frame = ch.charCodeAt(0) - 'A'.charCodeAt(0) + 26
+				frame = ch.charCodeAt(0) - 'A'.charCodeAt(0) + 26;
 			}
 			else {
 				return
@@ -84,104 +85,104 @@ scene("main", (level_index) => {
 				sprite("pirates", { frame, width: 32, height: 32 }),
 				area(),
 				solid(),
-			]
+			];
 		},
-	})
+	});
 
 	// get the player game obj by tag
-	const player = get("player")[0]
+	const player = get("player")[0];
 
 	function addDialog() {
-		const h = 160
-		const pad = 16
+		const h = 160;
+		const pad = 16;
 		const bg = add([
 			pos(0, height() - h),
 			rect(width(), h),
 			color(0, 0, 0),
 			z(100),
-		])
+		]);
 		const txt = add([
 			text("", {
 				width: width(),
 			}),
 			pos(0 + pad, height() - h + pad),
 			z(100),
-		])
-		bg.hidden = true
-		txt.hidden = true
+		]);
+		bg.hidden = true;
+		txt.hidden = true;
 		return {
 			say(t) {
-				txt.text = t
-				bg.hidden = false
-				txt.hidden = false
+				txt.text = t;
+				bg.hidden = false;
+				txt.hidden = false;
 			},
 			dismiss() {
 				if (!this.active()) {
-					return
+					return;
 				}
-				txt.text = ""
-				bg.hidden = true
-				txt.hidden = true
+				txt.text = "";
+				bg.hidden = true;
+				txt.hidden = true;
 			},
 			active() {
-				return !bg.hidden
+				return !bg.hidden;
 			},
 			destroy() {
-				bg.destroy()
-				txt.destroy()
+				bg.destroy();
+				txt.destroy();
 			},
-		}
+		};
 	}
 
-	let hasKey = false
-	const dialog = addDialog()
+	let hasKey = false;
+	const dialog = addDialog();
 
 	player.onCollide("key", (key) => {
-		destroy(key)
-		hasKey = true
-	})
+		destroy(key);
+		hasKey = true;
+	});
 
 	player.onCollide("door", () => {
 		if (hasKey) {
 			if (level_index + 1 < levels.length) {
-				go("main", level_index + 1)
+				go("main", level_index + 1);
 			} else {
-				go("win")
+				go("win");
 			}
 		} else {
-			dialog.say("you got no key!")
+			dialog.say("you got no key!");
 		}
-	})
+	});
 
 	// talk on touch
 	player.onCollide("character", (ch) => {
-		dialog.say(ch.msg)
-	})
+		dialog.say(ch.msg);
+	});
 
 	const dirs = {
 		"left": LEFT,
 		"right": RIGHT,
 		"up": UP,
 		"down": DOWN,
-	}
+	};
 
 	for (const dir in dirs) {
 		onKeyPress(dir, () => {
-			dialog.dismiss()
-		})
+			dialog.dismiss();
+		});
 		onKeyDown(dir, () => {
-			player.move(dirs[dir].scale(SPEED))
-		})
+			player.move(dirs[dir].scale(SPEED));
+		});
 	}
 
-})
+});
 
 scene("win", () => {
 	add([
 		text("You Win!"),
 		pos(width() / 2, height() / 2),
 		origin("center"),
-	])
-})
+	]);
+});
 
-go("main", 0)
+go("main", 0);
