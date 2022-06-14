@@ -4,6 +4,7 @@ kaboom();
 // sprite loading
 loadSprite("pirates", "/sprites/pirates.png", { sliceX: 8, sliceY: 8 }); // player sprite
 loadSprite("pirates-bg", "/sprites/pirates-bg.png"); // the blue sea background
+loadSprite("pirates-treasure", "/sprites/pirates-treasure.png");
 
 // define game layers, with last one drawn last (on top); default layer is game
 layers([
@@ -14,16 +15,15 @@ layers([
 
 // define main scene
 scene("main", (level_index) => {
-
+    // define player movement speed
+    const SPEED = 320;
     // add pirates-bg picture and tile image on background layer
-	add([
-		sprite("pirates-bg", { 
-			tiled: true, width: width(), height: height() }),
-		layer("bg"),
-	]);
+    add([
+        sprite("pirates-bg", { tiled: true, width: width(), height: height() }),
+        layer("bg"),
+    ]);
 
-	const SPEED = 320;
-
+    /*
 	// character dialog data
 	const characters = {
 		"a": {
@@ -34,9 +34,10 @@ scene("main", (level_index) => {
 			sprite: "pirates",
 			msg: "get out!",
 		},
-	};
+	};*/
 
-    // level layouts
+    // define level layouts; lines don't need to have the same length;
+    // use a-Z for level objects, @ is the player (defined in addLevel below)
     const levels = [
         [
             "                          ",
@@ -46,10 +47,10 @@ scene("main", (level_index) => {
             "  aeb                     ",
             " aGUn                     ",
             " iOVn                     ",
-            "  imj         rs          ",
+            "  imj         rs*         ",
             "              zA          ",
             "                          ",
-        ],
+        ]/*,
 		[
 			"        ",
 			"        ",
@@ -59,43 +60,50 @@ scene("main", (level_index) => {
 			"        ",
 			"        ",
 			"        ",
-		],
-	];
+		],*/
+    ];
 
-	addLevel(levels[level_index], {
-		width: 32,
-		height: 32,
-		//pos: vec2(32, 32),
-		"@": () => [
-			sprite("pirates", { frame: 42, width: 32, height: 32 }),
-			area(),
-			solid(),
-			"player",
-		],
-		any(ch) {
-			let frame;
-			if (ch >= 'a' && ch <= 'z') {
-				frame = ch.charCodeAt(0) - 'a'.charCodeAt(0);
-			}
-			else if (ch >= 'A' && ch <= 'Z') {
-				frame = ch.charCodeAt(0) - 'A'.charCodeAt(0) + 26;
-			}
-			else {
-				return;
-			}
-			console.log(ch, frame);
-			return [
-				sprite("pirates", { frame, width: 32, height: 32 }),
-				area(),
-				solid(),
-			];
-		},
-	});
+    addLevel(levels[level_index], {
+        width: 32,
+        height: 32,
+        // the player
+        "@": () => [
+            sprite("pirates", { frame: 42, width: 32, height: 32 }),
+            area(),
+            solid(),
+            "player",
+        ],
+        // the treasure
+        "*": () => [
+            sprite("pirates-treasure", { width: 32, height: 32 }),
+            area(),
+            solid(),
+            "treasure",
+        ],
+        // rest of the level
+        any(ch) {
+            let frame;
+            if (ch >= 'a' && ch <= 'z') {
+                frame = ch.charCodeAt(0) - 'a'.charCodeAt(0);
+            } else if (ch >= 'A' && ch <= 'Z') {
+                frame = ch.charCodeAt(0) - 'A'.charCodeAt(0) + 26;
+            } else {
+                // ignore all other chars
+                return;
+            }
+            // console.log(ch, frame);
+            return [
+                sprite("pirates", { frame, width: 32, height: 32 }),
+                area(),
+                solid(),
+            ];
+        },
+    });
 
-	// get the player game obj by tag
-	const player = get("player")[0];
+    // get the player game obj by tag
+    const player = get("player")[0];
 
-	function addDialog() {
+    /* function addDialog() {
 		const h = 160;
 		const pad = 16;
 		const bg = add([
@@ -138,13 +146,15 @@ scene("main", (level_index) => {
 	}
 
 	let hasKey = false;
-	const dialog = addDialog();
+	const dialog = addDialog();*/
 
-	player.onCollide("key", (key) => {
-		destroy(key);
-		hasKey = true;
-	});
+    // when player collides with treasure, win game
+    player.onCollide("treasure", (treasure) => {
+        destroy(treasure);
+        go("win");
+    });
 
+    /*
 	player.onCollide("door", () => {
 		if (hasKey) {
 			if (level_index + 1 < levels.length) {
@@ -160,33 +170,44 @@ scene("main", (level_index) => {
 	// talk on touch
 	player.onCollide("character", (ch) => {
 		dialog.say(ch.msg);
-	});
+	});*/
 
-	const dirs = {
-		"left": LEFT,
-		"right": RIGHT,
-		"up": UP,
-		"down": DOWN,
-	};
+    // define directions keys
+    const dirs = {
+        "left": LEFT,
+        "right": RIGHT,
+        "up": UP,
+        "down": DOWN,
+    };
 
-	for (const dir in dirs) {
-		onKeyPress(dir, () => {
+    for (const dir in dirs) {
+		/*onKeyPress(dir, () => {
 			dialog.dismiss();
-		});
-		onKeyDown(dir, () => {
-			player.move(dirs[dir].scale(SPEED));
-		});
-	}
+		});*/
+        onKeyDown(dir, () => {
+            player.move(dirs[dir].scale(SPEED));
+        });
+    }
 
 });
 
 // define win scene
 scene("win", () => {
-	add([
-		text("You Win!"),
-		pos(width() / 2, height() / 2),
-		origin("center"),
-	]);
+    // add pirates-bg picture and tile image on background layer
+    add([
+        sprite("pirates-bg", { tiled: true, width: width(), height: height() }),
+        layer("bg"),
+    ]);
+    // add text to game layer
+    add([
+        text("You Win!\nPress space to continue"),
+        pos(width() / 2, height() / 2),
+        origin("center"),
+    ]);
+    // register key handler for space
+    onKeyPress("space", () => {
+        go("menu", 0);
+    });
 });
 
 // define menu scene
@@ -198,7 +219,7 @@ scene("menu", () => {
     ]);
     // add text to game layer
     add([
-        text("Press space to go pirating!"),
+        text("Epic Pirate Adventure\nPress space to start!"),
         pos(width() / 2, height() / 2),
         origin("center"),
     ]);
