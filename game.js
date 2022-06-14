@@ -1,20 +1,21 @@
+// library init
 kaboom();
 
 // sprite loading
-loadSprite("pirates", "/sprites/pirates.png", {
-	sliceX: 8,
-	sliceY: 8,
-});
-loadSprite("pirates-bg", "/sprites/pirates-bg.png");
+loadSprite("pirates", "/sprites/pirates.png", { sliceX: 8, sliceY: 8 }); // player sprite
+loadSprite("pirates-bg", "/sprites/pirates-bg.png"); // the blue sea background
 
+// define game layers, with last one drawn last (on top); default layer is game
 layers([
     "bg",
     "game",
     "ui",
 ], "game");
 
+// define main scene
 scene("main", (level_index) => {
 
+    // add pirates-bg picture and tile image on background layer
 	add([
 		sprite("pirates-bg", { 
 			tiled: true, width: width(), height: height() }),
@@ -35,18 +36,20 @@ scene("main", (level_index) => {
 		},
 	};
 
-	// level layouts
-	const levels = [
-		[
-			"        ",
-			" ad     ",
-			" ij     ",
-			"   @    ",
-			"  aeb    ",
-			" aGUn   ",
-			" iOVn   ",
-			"  imj   ",
-		],
+    // level layouts
+    const levels = [
+        [
+            "                          ",
+            " ad                       ",
+            " ij                       ",
+            "   @                      ",
+            "  aeb                     ",
+            " aGUn                     ",
+            " iOVn                     ",
+            "  imj         rs          ",
+            "              zA          ",
+            "                          ",
+        ],
 		[
 			"        ",
 			"        ",
@@ -78,9 +81,9 @@ scene("main", (level_index) => {
 				frame = ch.charCodeAt(0) - 'A'.charCodeAt(0) + 26;
 			}
 			else {
-				return
+				return;
 			}
-			console.log(ch, frame)
+			console.log(ch, frame);
 			return [
 				sprite("pirates", { frame, width: 32, height: 32 }),
 				area(),
@@ -177,6 +180,7 @@ scene("main", (level_index) => {
 
 });
 
+// define win scene
 scene("win", () => {
 	add([
 		text("You Win!"),
@@ -185,4 +189,24 @@ scene("win", () => {
 	]);
 });
 
-go("main", 0);
+// define menu scene
+scene("menu", () => {
+    // add pirates-bg picture and tile image on background layer
+    add([
+        sprite("pirates-bg", { tiled: true, width: width(), height: height() }),
+        layer("bg"),
+    ]);
+    // add text to game layer
+    add([
+        text("Press space to go pirating!"),
+        pos(width() / 2, height() / 2),
+        origin("center"),
+    ]);
+    // register key handler for space
+    onKeyPress("space", () => {
+        go("main", 0);
+    });
+});
+
+// start menu scene
+go("menu", 0);
